@@ -1,0 +1,54 @@
+name: Platform verification
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: platform-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  application:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: node scripts/with-test-env.mjs typegen
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm test
+      - run: npm run test:db
+      - run: npm run security:scan
+      - run: npm audit --audit-level=high
+      - run: node scripts/with-test-env.mjs build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+  supabase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - uses: supabase/setup-cli@v1
+        with:
+          version: "2.117.0"
+      - run: supabase start
+      - run: supabase db reset --local --no-seed
+      - run: npm run test:db:live
+        env:
+          # Standard disposable local Supabase database, not a production credential.
+          TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      - run: supabase stop --no-backup
+        if: always()
