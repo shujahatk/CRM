@@ -104,21 +104,11 @@ it("ambiguous collision logs identity_conflict and denies silent merge", async (
     await db.exec(`select api.create_lead(${wA}, 'Lead A', 'leada@example.test', '+15551111111', null)`);
     await db.exec(`select api.create_lead(${wA}, 'Lead B', 'leadb@example.test', '+15552222222', null)`);
 
-    // Intake with Lead A's email and Lead B's phone
-    await db.exec("savepoint sp_conflict;");
-    await expect(
-      db.exec(`select api.create_lead(${wA}, 'Conflict Candidate', 'leada@example.test', '+15552222222', null)`)
-    ).rejects.toMatchObject({ code: "40001" });
-    await db.exec("rollback to savepoint sp_conflict;");
-
-    // Conflict recording logs identity_conflict for manager review
-    await db.exec(`select api.record_identity_conflict(
-      ${wA},
-      'intake_test',
-      array['10000000-0000-4000-8000-000000000001'::uuid, '10000000-0000-4000-8000-000000000002'::uuid],
-      '[{"kind": "email", "value": "leada@example.test"}, {"kind": "phone", "value": "+15552222222"}]'::jsonb,
-      'Email and phone belong to distinct existing leads'
-    )`);
+    // The intake itself must commit the conflict without a second, fabricated RPC.
+    const intake = await db.query(`select api.create_lead(${wA}, 'Conflict Candidate', 'leada@example.test', '+15552222222', null) as id`);
+    expect((intake.rows[0] as Row).id).toBeNull();
+    const leads = await db.query(`select count(*) as n from crm.leads where workspace_id=${wA}`);
+    expect(Number((leads.rows[0] as Row).n)).toBe(2);
 
     // Verify conflict record created
     const conflicts = await db.query(`select * from crm.identity_conflicts where workspace_id = ${wA}`);
@@ -209,7 +199,7 @@ it("stage transition succeeds and records immutable transition", async () => {
     const leadId = (res.rows[0] as Row).id;
 
     // Move to contacted
-    await db.exec(`select api.transition_stage(${wA}, '${leadId}', 'contacted')`);
+    await db.exec(`select api.transition_stage(${wA}, '${leadId}', 'contacted', null, 'new_lead', 1, 'stage-test')`);
 
     const journey = await db.query(`select j.*, s.stable_code from crm.lead_journeys j join crm.stages s on s.id=j.stage_id where j.lead_id = '${leadId}'`);
     expect((journey.rows[0] as Row).stable_code).toBe("contacted");

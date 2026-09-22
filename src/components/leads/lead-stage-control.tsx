@@ -91,7 +91,7 @@ export function LeadStageControl({
           onChange={(e) => handleStageChange(e.target.value)}
           className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-2xs hover:border-slate-400 focus:border-[#116c58] focus:ring-1 focus:ring-[#116c58] outline-hidden cursor-pointer"
         >
-          {stages.map((s) => (
+          {stages.filter(s => s.stage_code === currentStageCode || ['contacted','call_1','call_2','call_3','call_4'].includes(s.stage_code)).map((s) => (
             <option key={s.stage_code} value={s.stage_code}>
               {s.label}
             </option>

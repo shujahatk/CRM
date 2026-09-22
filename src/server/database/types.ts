@@ -1,4 +1,5 @@
 import type { MemberRole } from "@/modules/auth/policies";
+import type { SalesDetail,SalesReport,EodRevision } from '@/modules/sales/types';
 
 export type Access = { workspace_id: string; workspace_name: string; membership_id: string; role: MemberRole; is_owner: boolean };
 export type Workspace = { id: string; name: string; timezone: string; role: MemberRole; is_owner: boolean };
@@ -174,6 +175,12 @@ export type Database = {
   api: {
     Tables: Record<never, never>; Views: Record<never, never>; Enums: Record<never, never>; CompositeTypes: Record<never, never>;
     Functions: {
+      sales_command:{Args:{p_workspace:string;p_lead:string;p_action:string;p_version:number;p_command_key:string;p_input:Record<string,string|number>};Returns:Record<string,unknown>};
+      payment_command:{Args:{p_workspace:string;p_lead:string;p_deal:string;p_command_key:string;p_input:Record<string,string>};Returns:Record<string,unknown>};
+      sales_detail:{Args:{p_workspace:string;p_lead:string};Returns:SalesDetail};
+      sales_report:{Args:{p_workspace:string;p_from:string;p_to:string;p_filters?:Record<string,string|number>};Returns:SalesReport};
+      submit_eod:{Args:{p_workspace:string;p_date:string;p_revision:number;p_command_key:string;p_qualitative:Record<string,string>;p_state:string};Returns:{report_id:string;revision:number}};
+      eod_history:{Args:{p_workspace:string;p_date:string;p_member?:string};Returns:EodRevision[]};
       my_access: { Args: Record<never, never>; Returns: Access[] };
       workspace_context: { Args: { p_workspace: string }; Returns: Workspace[] };
       list_members: { Args: { p_workspace: string }; Returns: Member[] };

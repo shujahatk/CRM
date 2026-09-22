@@ -49,6 +49,9 @@ export function LeadTasksControl({
     setErrorMessage(null);
 
     const formData = new FormData(e.currentTarget);
+    const due = new Date(String(formData.get("dueAt")));
+    if (Number.isNaN(due.getTime())) { setIsPending(false); setErrorMessage("Valid due date required."); return; }
+    formData.set("dueAt", due.toISOString());
     formData.set("workspaceId", workspaceId);
     formData.set("leadId", leadId);
 

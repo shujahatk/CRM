@@ -45,7 +45,7 @@ export async function transitionStageAction(input: {
   if (error) {
     log({ event: "stage.transition", outcome: "error", code: error.code });
     if (error.code === "22023") {
-      return { error: "A lost reason is required when moving a lead to Closed Lost." };
+      return { error: "Use the sales action on Lead Detail for meetings, follow-up, nurture and closing." };
     }
     if (error.code === "40001") {
       return { error: "Stage changed concurrently by another user. Refreshing..." };
@@ -53,7 +53,7 @@ export async function transitionStageAction(input: {
     if (error.code === "42501") {
       return { error: "Permission denied to transition this lead's stage." };
     }
-    return { error: error.message || "Failed to update pipeline stage." };
+    return { error: "Failed to update pipeline stage." };
   }
 
   revalidatePath(`/${workspaceId}/pipeline`);

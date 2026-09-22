@@ -16,6 +16,8 @@ export type TelemetryEvent =
   | "stage.transition"
   | "task.create"
   | "task.complete"
+  | "sales.command"
+  | "payment.command"
   | "task.reopen";
 
 type LogEntry = {

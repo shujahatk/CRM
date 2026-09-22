@@ -28,6 +28,8 @@ const activeModules = [
   { name: "Leads", path: "/leads", icon: Users },
   { name: "Pipeline", path: "/pipeline", icon: Columns3 },
   { name: "Tasks", path: "/tasks", icon: CheckSquare },
+  { name: "EOD", path: "/eod", icon: ClipboardList },
+  { name: "Reports", path: "/reports", icon: BarChart3 },
 ] as const;
 
 const upcomingModules = [
@@ -36,8 +38,6 @@ const upcomingModules = [
   ["Forms", FileText],
   ["Attribution", ChartNoAxesCombined],
   ["VSL Analytics", Play],
-  ["EOD", ClipboardList],
-  ["Reports", BarChart3],
   ["Settings", Settings],
 ] as const;
 
@@ -54,7 +54,7 @@ export function WorkspaceShell({ workspace, email, children }: { workspace: Work
         >
           <div className="flex items-center justify-between">
             <span className="font-semibold text-slate-800">{workspace.name}</span>
-            <span className="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-mono">v2.0</span>
+            <span className="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-mono">v3.0</span>
           </div>
           <span className="text-xs text-slate-500 mt-1 block">Switch workspace &rarr;</span>
         </Link>
@@ -84,7 +84,7 @@ export function WorkspaceShell({ workspace, email, children }: { workspace: Work
             })}
           </ul>
 
-          <p className="mt-6 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">Coming in Phase 3+</p>
+          <p className="mt-6 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">Upcoming modules</p>
           <ul className="mt-2 grid grid-cols-2 gap-1 lg:grid-cols-1">
             {upcomingModules.map(([name, Icon]) => (
               <li key={name}>
@@ -122,7 +122,7 @@ export function WorkspaceShell({ workspace, email, children }: { workspace: Work
             <span className="text-slate-700 font-medium">{workspace.name}</span>
           </div>
           <span className="rounded-full bg-[#e8f3ee] px-3 py-1 text-xs font-semibold text-[#116c58] border border-emerald-100">
-            Phase 2 Active
+            Sales workspace
           </span>
         </header>
         <main id="main" className="p-6 lg:p-8 flex-1 min-w-0">

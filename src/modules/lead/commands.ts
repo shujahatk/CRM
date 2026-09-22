@@ -3,15 +3,15 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/server/database/supabase";
-import { normalizeEmail, normalizePhone } from "./normalization";
+
 import { log } from "@/server/telemetry/logger";
 
 const createLeadSchema = z.object({
   workspaceId: z.string().uuid(),
-  name: z.string().min(1, "Name is required").max(200),
+  name: z.string().min(1, "Name is required").max(160),
   email: z.string().optional().nullable(),
   phone: z.string().optional().nullable(),
-  company: z.string().max(200).optional().nullable(),
+  company: z.string().max(160).optional().nullable(),
   commandKey: z.string().optional().nullable(),
 });
 
@@ -36,15 +36,14 @@ export async function createLeadAction(
   const { workspaceId, name, email, phone, company, commandKey } = parsed.data;
 
   // Normalization preserving raw value and avoiding country guessing
-  const normEmail = normalizeEmail(email);
-  const normPhone = normalizePhone(phone);
+
 
   const client = await createSupabaseServerClient(true);
   const { data: leadId, error } = await client.rpc("create_lead", {
     p_workspace: workspaceId,
     p_name: name.trim(),
-    p_email: normEmail,
-    p_phone: normPhone?.normalized ?? null,
+    p_email: email?.trim() || null,
+    p_phone: phone?.trim() || null,
     p_company: company ? company.trim() : null,
     p_command_key: commandKey ?? null,
   });
@@ -57,9 +56,10 @@ export async function createLeadAction(
     if (error.code === "42501") {
       return { error: "You do not have permission to create leads in this workspace." };
     }
-    return { error: error.message || "Failed to create lead." };
+    return { error: "Failed to create lead." };
   }
 
+  if (!leadId) return { error: "Contact details conflict. A review record has been saved for your administrator." };
   revalidatePath(`/${workspaceId}/leads`);
   revalidatePath(`/${workspaceId}/pipeline`);
   revalidatePath(`/${workspaceId}/dashboard`);
@@ -69,8 +69,8 @@ export async function createLeadAction(
 const updateLeadSchema = z.object({
   workspaceId: z.string().uuid(),
   leadId: z.string().uuid(),
-  displayName: z.string().min(1, "Name is required").max(200),
-  company: z.string().max(200).optional().nullable(),
+  displayName: z.string().min(1, "Name is required").max(160),
+  company: z.string().max(160).optional().nullable(),
   version: z.coerce.number().int().nonnegative(),
 });
 
@@ -109,7 +109,7 @@ export async function updateLeadAction(
     if (error.code === "42501") {
       return { error: "Permission denied to update lead." };
     }
-    return { error: error.message || "Failed to update lead." };
+    return { error: "Failed to update lead." };
   }
 
   revalidatePath(`/${workspaceId}/leads/${leadId}`);
@@ -166,7 +166,7 @@ export async function assignLeadAction(
     if (error.code === "42501") {
       return { error: "Only admins and managers can reassign leads." };
     }
-    return { error: error.message || "Failed to assign lead." };
+    return { error: "Failed to assign lead." };
   }
 
   revalidatePath(`/${workspaceId}/leads/${leadId}`);

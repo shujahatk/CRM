@@ -1,3 +1,5 @@
+import { ReportView } from '@/components/sales/report-view';
+import { databaseError } from '@/server/errors';
 import Link from "next/link";
 import { requireWorkspace } from "@/server/auth/session";
 import { createSupabaseServerClient } from "@/server/database/supabase";
@@ -6,10 +8,14 @@ import type { DashboardMetrics } from "@/server/database/types";
 
 export default async function DashboardPage({ params }: { params: Promise<{ workspace: string }> }) {
   const { workspace } = await params;
-  await requireWorkspace(workspace);
+  const context = await requireWorkspace(workspace);
 
   const client = await createSupabaseServerClient();
-  const { data: metricsList } = await client.rpc("dashboard_metrics", { p_workspace: workspace });
+  const { data: metricsList, error: metricsError } = await client.rpc("dashboard_metrics", { p_workspace: workspace });
+  if (metricsError) throw databaseError(metricsError.code);
+  const today = new Intl.DateTimeFormat('en-CA', {timeZone:context.workspace.timezone}).format(new Date());
+  const sales = await client.rpc('sales_report', {p_workspace:workspace,p_from:today,p_to:today});
+  if (sales.error) throw databaseError(sales.error.code);
   const metrics: DashboardMetrics = metricsList?.[0] || {
     total_active_leads: 0,
     new_leads_7d: 0,
@@ -142,6 +148,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ work
         </div>
       </div>
 
+      <section className="space-y-4"><h2 className="text-lg font-semibold">Sales today</h2><ReportView report={sales.data} workspace={workspace} compact/></section>
       {/* Stage Distribution Section */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
         <div className="flex items-center justify-between mb-6">

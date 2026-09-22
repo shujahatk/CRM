@@ -10,7 +10,7 @@ const createTaskSchema = z.object({
   leadId: z.string().uuid(),
   assigneeId: z.string().uuid(),
   title: z.string().min(1, "Task title is required").max(200),
-  dueAt: z.string().min(1, "Due date is required"),
+  dueAt: z.iso.datetime(),
   priority: z.enum(["low", "medium", "high", "urgent"]).optional().default("medium"),
 });
 
@@ -46,7 +46,7 @@ export async function createTaskAction(
   if (error) {
     log({ event: "task.create", outcome: "error", code: error.code });
     if (error.code === "42501") return { error: "Permission denied to create tasks on this lead." };
-    return { error: error.message || "Failed to create task." };
+    return { error: "Failed to create task." };
   }
 
   revalidatePath(`/${workspaceId}/leads/${leadId}`);
@@ -68,7 +68,7 @@ export async function completeTaskAction(
 
   if (error) {
     log({ event: "task.complete", outcome: "error", code: error.code });
-    return { error: error.message || "Failed to complete task." };
+    return { error: "Failed to complete task." };
   }
 
   if (leadId) revalidatePath(`/${workspaceId}/leads/${leadId}`);
@@ -90,7 +90,7 @@ export async function reopenTaskAction(
 
   if (error) {
     log({ event: "task.reopen", outcome: "error", code: error.code });
-    return { error: error.message || "Failed to reopen task." };
+    return { error: "Failed to reopen task." };
   }
 
   if (leadId) revalidatePath(`/${workspaceId}/leads/${leadId}`);

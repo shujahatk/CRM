@@ -2,7 +2,7 @@
 
 Status: logical design for review, not executable SQL or applied migrations. Source/scope: [ARCHITECTURE.md](ARCHITECTURE.md). The tables below deliberately preserve the complete brief and additional tracking requirements; provider-related structures describe future implementation only.
 
-Phase 1 implementation: `supabase/migrations/202609220001_platform.sql` implements only workspaces, global self-visible profiles, memberships, teams/team memberships, capability/report-scope support, private invitations and administrative audit. `crm` and `private` are not Data API schemas; `api` exposes explicit functions. `crm_owner` is NOLOGIN and owns the tables/functions. Global and explicit function-grant revocation is required because schema-only defaults cannot remove PostgreSQL's global PUBLIC EXECUTE default. Deferred lead access grants, privacy, events/jobs and all sales tables are not created prematurely. Global profiles are the documented exception to tenant keys alongside Auth identity; they hold no tenant permissions and are self-read only.
+Phase 1–3 implementation: `202609220001_platform.sql` (Phase 1 platform), `202609220002_phase2_leads_pipeline.sql` (Phase 2 leads & pipeline), and `202609220003_phase3_sales_outcomes.sql` (Phase 3 meetings, sales outcomes, deals, payments, EOD, and reports) have been applied and verified in PGlite. `crm` and `private` are not Data API schemas; `api` exposes explicit functions. `crm_owner` is NOLOGIN and owns the tables/functions. Global profiles are the documented exception to tenant keys alongside Auth identity; they hold no tenant permissions and are self-read only.
 
 ## Conventions and invariants
 

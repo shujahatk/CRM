@@ -43,7 +43,7 @@ export async function createNoteAction(
   if (error) {
     log({ event: "note.create", outcome: "error", code: error.code });
     if (error.code === "42501") return { error: "Permission denied to add notes to this lead." };
-    return { error: error.message || "Failed to create note." };
+    return { error: "Failed to create note." };
   }
 
   revalidatePath(`/${workspaceId}/leads/${leadId}`);
@@ -84,7 +84,7 @@ export async function editNoteAction(
   if (error) {
     log({ event: "note.edit", outcome: "error", code: error.code });
     if (error.code === "42501") return { error: "Permission denied to edit note." };
-    return { error: error.message || "Failed to update note." };
+    return { error: "Failed to update note." };
   }
 
   revalidatePath(`/${workspaceId}/leads/${leadId}`);

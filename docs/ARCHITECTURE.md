@@ -2,7 +2,7 @@
 
 Status: proposed for client review. Architecture only; no application, migrations, credentials, provider connections or deployment have been initialized. Date: 2026-09-21.
 
-Implementation update, 2026-09-22: the client approved this architecture and authorized Phase 1 only. The original design below remains the contract for later phases. Phase 1 status and executed verification are recorded in [PHASE_1_VERIFICATION.md](PHASE_1_VERIFICATION.md). Realtime is disabled/unpublished in this phase; no sales data requires subscriptions yet.
+Implementation update, 2026-09-22: Phases 1, 2, and 3 have been implemented and verified. The original design below remains the contract for later phases. Verification reports are recorded in [PHASE_1_VERIFICATION.md](PHASE_1_VERIFICATION.md), [PHASE_2_VERIFICATION.md](PHASE_2_VERIFICATION.md), and [PHASE_3_VERIFICATION.md](PHASE_3_VERIFICATION.md). Realtime is disabled/unpublished; external providers remain disconnected.
 
 ## 1. Authority and scope
 

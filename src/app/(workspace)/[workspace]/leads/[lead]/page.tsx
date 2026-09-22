@@ -1,3 +1,5 @@
+import { SalesWorkspace } from '@/components/leads/sales-workspace';
+import { databaseError } from '@/server/errors';
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireWorkspace } from "@/server/auth/session";
@@ -13,8 +15,6 @@ import {
   Phone,
   History,
   Tag,
-  CalendarCheck,
-  CreditCard,
 } from "lucide-react";
 import type { LeadDetailData, StageRow, LostReasonRow, Member } from "@/server/database/types";
 
@@ -28,17 +28,19 @@ export default async function LeadDetailPage({
 
   const client = await createSupabaseServerClient();
 
-  const [leadDetailRes, stagesRes, lostReasonsRes, membersRes] = await Promise.all([
+  const [leadDetailRes, stagesRes, lostReasonsRes, membersRes, salesRes] = await Promise.all([
     client.rpc("get_lead_detail", { p_workspace: workspace, p_lead: leadId }),
     client.rpc("list_stages", { p_workspace: workspace }),
     client.rpc("list_lost_reasons", { p_workspace: workspace }),
     client.rpc("list_members", { p_workspace: workspace }),
+    client.rpc("sales_detail", { p_workspace: workspace, p_lead: leadId }),
   ]);
 
   if (leadDetailRes.error || !leadDetailRes.data) {
     notFound();
   }
 
+  if (salesRes.error) throw databaseError(salesRes.error.code);
   const detail = leadDetailRes.data as LeadDetailData;
   const stages: StageRow[] = stagesRes.data || [];
   const lostReasons: LostReasonRow[] = lostReasonsRes.data || [];
@@ -174,36 +176,7 @@ export default async function LeadDetailPage({
             userRole={context.workspace.role}
           />
 
-          {/* Phase 3 Informational Blocks (Constrained: strictly non-fabricated) */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4 opacity-75">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <CalendarCheck size={16} className="text-slate-400" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">Calendar & Meetings</h3>
-              </div>
-              <span className="text-[10px] font-mono font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                Phase 3
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Live Calendly integration and scheduled meeting bookings will connect here in Phase 3. No mock records fabricated.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4 opacity-75">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <CreditCard size={16} className="text-slate-400" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">Deals & Checkout</h3>
-              </div>
-              <span className="text-[10px] font-mono font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                Phase 3
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Stripe checkout session creation, revenue contracts, and deal ledgers will connect here in Phase 3.
-            </p>
-          </div>
+          <SalesWorkspace workspace={workspace} lead={leadId} version={journey?.version??1} terminal={!journey||['won','lost'].includes(journey.stage_category)} role={context.workspace.role} data={salesRes.data} reasons={lostReasons} members={members}/>
         </div>
 
         {/* Right Column (7 cols): Notes, Tasks, Activity Audit Trail */}

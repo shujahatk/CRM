@@ -1,0 +1,17 @@
+import Link from 'next/link';
+import {requireWorkspace,authenticatedClient} from '@/server/auth/session';
+import {databaseError} from '@/server/errors';
+import {ReportView} from '@/components/sales/report-view';
+import {z} from 'zod';
+const filtersSchema=z.object({from:z.iso.date(),to:z.iso.date(),setter_id:z.union([z.uuid(),z.literal('')]).optional(),closer_id:z.union([z.uuid(),z.literal('')]).optional(),team_id:z.union([z.uuid(),z.literal('')]).optional(),outcome:z.enum(['','SET','CONFIRM','SHOW','NO_SHOW','FOLLOW_UP','NURTURE','CLOSE_WON','CLOSE_LOST']).optional(),offset:z.coerce.number().int().min(0).max(100000).default(0)});
+export default async function ReportsPage({params,searchParams}:{params:Promise<{workspace:string}>;searchParams:Promise<Record<string,string|undefined>>}){
+ const {workspace}=await params;const context=await requireWorkspace(workspace);const query=await searchParams;
+ const today=new Intl.DateTimeFormat('en-CA',{timeZone:context.workspace.timezone}).format(new Date());
+ const parsed=filtersSchema.safeParse({...query,from:query.from??today,to:query.to??today});
+ if(!parsed.success)return <p role="alert">Invalid report filters. <Link href={`/${workspace}/reports`}>Reset filters</Link></p>;
+ const f=parsed.data;const {client}=await authenticatedClient();
+ const filters:Record<string,string|number>={offset:f.offset};for(const key of ['setter_id','closer_id','team_id','outcome'] as const)if(f[key])filters[key]=f[key];
+ const {data,error}=await client.rpc('sales_report',{p_workspace:workspace,p_from:f.from,p_to:f.to,p_filters:filters});if(error)throw databaseError(error.code);
+ const next=new URLSearchParams(Object.fromEntries(Object.entries(query).filter((x):x is [string,string]=>typeof x[1]==='string')));next.set('offset',String(f.offset+100));
+ return <div className="mx-auto max-w-7xl space-y-6"><header><p className="text-xs font-semibold uppercase tracking-widest text-[#116c58]">Sales intelligence</p><h1 className="mt-1 text-3xl font-bold">Reports</h1><p className="mt-2 text-sm text-slate-500">Workspace dates, historical sales credit, and cash separated by currency.</p></header><form className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-3"><label className="text-sm">From<input type="date" required name="from" defaultValue={f.from} className="mt-1 block w-full rounded border border-slate-300 p-2"/></label><label className="text-sm">To<input type="date" required name="to" defaultValue={f.to} className="mt-1 block w-full rounded border border-slate-300 p-2"/></label>{(['setter_id','closer_id','team_id'] as const).map(key=><label className="text-sm capitalize" key={key}>{key.replace('_',' ')}<input name={key} defaultValue={f[key]} placeholder="Optional UUID" className="mt-1 block w-full rounded border border-slate-300 p-2"/></label>)}<label className="text-sm">Outcome<select name="outcome" defaultValue={f.outcome} className="mt-1 block w-full rounded border border-slate-300 p-2"><option value="">All outcomes</option>{['SET','CONFIRM','SHOW','NO_SHOW','FOLLOW_UP','NURTURE','CLOSE_WON','CLOSE_LOST'].map(o=><option key={o}>{o}</option>)}</select></label><button className="rounded-lg bg-[#116c58] px-4 py-2 text-sm font-semibold text-white">Apply filters</button></form><ReportView report={data} workspace={workspace}/>{data.drilldown.length===100&&<Link className="text-sm font-semibold text-[#116c58]" href={`?${next}`}>Next 100 events →</Link>}</div>;
+}
