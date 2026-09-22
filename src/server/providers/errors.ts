@@ -4,7 +4,12 @@ import type { ErrorClassification } from "./contracts";
 export function classifyProviderError(error: unknown): ErrorClassification {
   if (!error) return "unknown";
 
-  const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+  const message =
+    error instanceof Error
+      ? error.message.toLowerCase()
+      : typeof error === "object" && error !== null && "message" in error
+        ? String((error as { message: unknown }).message).toLowerCase()
+        : String(error).toLowerCase();
   const status = typeof error === "object" && error !== null && "status" in error ? Number((error as { status: unknown }).status) : null;
   const code = typeof error === "object" && error !== null && "code" in error ? String((error as { code: unknown }).code).toLowerCase() : "";
 

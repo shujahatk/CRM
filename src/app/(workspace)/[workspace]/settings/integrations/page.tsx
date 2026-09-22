@@ -98,17 +98,17 @@ export default async function IntegrationsSettingsPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wider bg-amber-50 text-amber-800 px-3 py-1.5 rounded-md border border-amber-200">
-            Phase 6A.1 Foundation
+          <span className="text-xs font-semibold uppercase tracking-wider bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-md border border-emerald-200">
+            Phase 6B Resend Email
           </span>
         </div>
       </div>
 
       <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-700">
-        <p className="font-medium text-slate-900">Provider Infrastructure Status</p>
+        <p className="font-medium text-slate-900">Email Provider Integration (Resend)</p>
         <p className="text-xs text-slate-600 mt-1">
-          Durable webhook ingress, deduplication inbox, concurrency-safe dispatch queues, and monotonic status reconciliation are active.
-          Per Phase 6A.1 security policies, zero external provider SDKs or live credentials are connected.
+          Resend email provider adapter, cryptographic Svix webhook verification, monotonic delivery reconciliation, and bounce/complaint suppressions are enabled.
+          No provider secrets or credentials are ever displayed or exposed in UI surfaces.
         </p>
       </div>
 

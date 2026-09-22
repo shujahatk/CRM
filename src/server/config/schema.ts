@@ -16,6 +16,8 @@ const serverSchema = publicSchema.extend({
   APP_ENV: z.enum(["local", "test", "staging", "production"]),
   APP_BASE_URL: origin,
   LOG_LEVEL: z.enum(["info", "warn", "error"]).default("info"),
+  RESEND_API_KEY: z.string().optional(),
+  RESEND_WEBHOOK_SECRET: z.string().optional(),
 });
 export function validateServerEnvironment(input: Record<string, string | undefined>) {
   const parsed = serverSchema.safeParse(input);
