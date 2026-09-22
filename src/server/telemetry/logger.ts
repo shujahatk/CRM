@@ -42,7 +42,14 @@ export type TelemetryEvent =
   | "campaign.cancel"
   | "sequence.create"
   | "sequence.publish"
-  | "sequence.enroll";
+  | "sequence.enroll"
+  | "provider.dispatch_claimed"
+  | "provider.dispatch_blocked"
+  | "provider.dispatch_failed"
+  | "provider.webhook_received"
+  | "provider.webhook_rejected"
+  | "provider.webhook_processed"
+  | "provider.webhook_quarantined";
 
 type LogEntry = {
   event: TelemetryEvent;
@@ -50,12 +57,16 @@ type LogEntry = {
   requestId?: string;
   errorCode?: ErrorCode;
   code?: string;
-  // Privacy-safe metadata (Correction 16: never log full message bodies, rendered sensitive templates, or raw PII)
+  // Privacy-safe metadata (Never log full message bodies, auth headers, tokens, or raw PII)
   channel?: "email" | "sms" | "whatsapp";
   messageId?: string;
   conversationId?: string;
   campaignId?: string;
   sequenceId?: string;
+  provider?: string;
+  jobId?: string;
+  eventId?: string;
+  errorClassification?: string;
 };
 
 export function log(entry: LogEntry) {
@@ -78,6 +89,10 @@ export function log(entry: LogEntry) {
       ...(entry.conversationId ? { conversationId: entry.conversationId } : {}),
       ...(entry.campaignId ? { campaignId: entry.campaignId } : {}),
       ...(entry.sequenceId ? { sequenceId: entry.sequenceId } : {}),
+      ...(entry.provider ? { provider: entry.provider } : {}),
+      ...(entry.jobId ? { jobId: entry.jobId } : {}),
+      ...(entry.eventId ? { eventId: entry.eventId } : {}),
+      ...(entry.errorClassification ? { errorClassification: entry.errorClassification } : {}),
     })
   );
 }

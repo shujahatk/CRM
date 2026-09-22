@@ -685,6 +685,26 @@ export type Database = {
           active_enrollments: number;
         }>;
       };
+      list_provider_connections: {
+        Args: { p_workspace_id: string };
+        Returns: Array<{
+          id: string;
+          provider: "resend" | "twilio" | "whatsapp" | "calendly" | "meta" | "vsl" | "outbound";
+          external_account_id: string;
+          connection_state: "not_configured" | "configured" | "verification_required" | "active" | "degraded" | "disabled" | "error";
+          capabilities: string[];
+          configuration_metadata: Record<string, unknown>;
+          health_status: "not_configured" | "active" | "degraded" | "error" | "disabled" | "verification_required";
+          last_health_check_at: string | null;
+          last_health_check_code: string | null;
+          created_at: string;
+          updated_at: string;
+        }>;
+      };
+      retry_dispatch_job: {
+        Args: { p_workspace_id: string; p_job_id: string };
+        Returns: string;
+      };
     };
   };
 };
