@@ -28,6 +28,9 @@ const activeModules = [
   { name: "Leads", path: "/leads", icon: Users },
   { name: "Pipeline", path: "/pipeline", icon: Columns3 },
   { name: "Tasks", path: "/tasks", icon: CheckSquare },
+  { name: "Forms", path: "/forms", icon: FileText },
+  { name: "Attribution", path: "/attribution", icon: ChartNoAxesCombined },
+  { name: "VSL Analytics", path: "/vsl", icon: Play },
   { name: "EOD", path: "/eod", icon: ClipboardList },
   { name: "Reports", path: "/reports", icon: BarChart3 },
 ] as const;
@@ -35,9 +38,6 @@ const activeModules = [
 const upcomingModules = [
   ["Conversations", MessagesSquare],
   ["Campaigns", Megaphone],
-  ["Forms", FileText],
-  ["Attribution", ChartNoAxesCombined],
-  ["VSL Analytics", Play],
   ["Settings", Settings],
 ] as const;
 

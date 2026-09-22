@@ -15,6 +15,8 @@ import {
   Phone,
   History,
   Tag,
+  Compass,
+  Play,
 } from "lucide-react";
 import type { LeadDetailData, StageRow, LostReasonRow, Member } from "@/server/database/types";
 
@@ -28,12 +30,14 @@ export default async function LeadDetailPage({
 
   const client = await createSupabaseServerClient();
 
-  const [leadDetailRes, stagesRes, lostReasonsRes, membersRes, salesRes] = await Promise.all([
+  const [leadDetailRes, stagesRes, lostReasonsRes, membersRes, salesRes, vslRes, attrRes] = await Promise.all([
     client.rpc("get_lead_detail", { p_workspace: workspace, p_lead: leadId }),
     client.rpc("list_stages", { p_workspace: workspace }),
     client.rpc("list_lost_reasons", { p_workspace: workspace }),
     client.rpc("list_members", { p_workspace: workspace }),
     client.rpc("sales_detail", { p_workspace: workspace, p_lead: leadId }),
+    client.rpc("get_lead_vsl_history", { p_workspace: workspace, p_lead_id: leadId }),
+    client.rpc("get_lead_attribution", { p_workspace: workspace, p_lead_id: leadId }),
   ]);
 
   if (leadDetailRes.error || !leadDetailRes.data) {
@@ -177,6 +181,62 @@ export default async function LeadDetailPage({
           />
 
           <SalesWorkspace workspace={workspace} lead={leadId} version={journey?.version??1} terminal={!journey||['won','lost'].includes(journey.stage_category)} role={context.workspace.role} data={salesRes.data} reasons={lostReasons} members={members}/>
+
+          {/* Lead Attribution Snapshot (Derived Current State, Correction 3) */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+              <Compass size={16} className="text-[#116c58]" />
+              <h3 className="text-sm font-bold text-slate-900">Attribution Intelligence</h3>
+            </div>
+            <div className="mt-3 text-xs space-y-2">
+              {attrRes.data && attrRes.data.length > 0 ? (
+                attrRes.data.map((snap, idx) => {
+                  const touch = snap.touch;
+                  return (
+                    <div key={idx} className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                      <div className="font-semibold text-slate-800 capitalize">{snap.model.replace('_', ' ')}</div>
+                      <div className="text-slate-600 mt-1">
+                        Source: <span className="font-medium text-slate-900">{touch?.utm_source || 'Direct'}</span>
+                        {touch?.utm_campaign && <span className="text-slate-500"> / {touch.utm_campaign}</span>}
+                      </div>
+                      {touch?.landing_url && (
+                        <div className="text-slate-400 text-[11px] truncate mt-0.5">{touch.landing_url}</div>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-slate-400 py-2">No attribution touch recorded.</p>
+              )}
+            </div>
+          </div>
+
+          {/* VSL Watch History (Correction 4 & 5) */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+              <Play size={16} className="text-[#116c58]" />
+              <h3 className="text-sm font-bold text-slate-900">VSL Engagement</h3>
+            </div>
+            <div className="mt-3 text-xs space-y-2">
+              {vslRes.data && vslRes.data.length > 0 ? (
+                vslRes.data.map((session, idx) => (
+                  <div key={idx} className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-slate-800">{session.vsl_name}</span>
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${session.completed ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-200 text-slate-700'}`}>
+                        {session.completion_percent}% Watched
+                      </span>
+                    </div>
+                    <div className="text-slate-500 text-[11px] mt-1">
+                      {session.total_unique_seconds_watched}s watched of {session.duration_seconds}s
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-slate-400 py-2">No VSL sessions recorded for this lead.</p>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Right Column (7 cols): Notes, Tasks, Activity Audit Trail */}

@@ -331,6 +331,139 @@ export type Database = {
         Args: { p_workspace: string };
         Returns: LostReasonRow[];
       };
+      create_tracking_site: {
+        Args: { p_workspace: string; p_name: string; p_allowed_origins: string[]; p_is_public_any_origin: boolean };
+        Returns: { site_id: string; public_key: string };
+      };
+      create_form: {
+        Args: { p_workspace: string; p_tracking_site_id: string; p_name: string };
+        Returns: { form_id: string; public_key: string };
+      };
+      publish_form_version: {
+        Args: { p_workspace: string; p_form_id: string; p_pipeline_id: string; p_stage_id: string; p_fields: unknown; p_redirect_url?: string | null };
+        Returns: { version_id: string };
+      };
+      public_submit_form: {
+        Args: { p_form_key: string; p_answers: unknown; p_visitor_token?: string | null; p_attribution?: unknown; p_idempotency_key?: string | null };
+        Returns: { submission_id: string; lead_id: string | null; redirect_url: string | null; cached?: boolean };
+      };
+      create_vsl_asset: {
+        Args: { p_workspace: string; p_tracking_site_id: string; p_name: string; p_duration: number; p_player_type?: string; p_external_id?: string | null };
+        Returns: { asset_id: string; version_id: string; public_key: string };
+      };
+      start_vsl_session: {
+        Args: { p_public_key: string; p_visitor_token?: string | null; p_lead_id?: string | null };
+        Returns: { vsl_session_id: string; duration_seconds: number; bin_width_seconds: number };
+      };
+      record_vsl_heartbeat: {
+        Args: { p_vsl_session_id: string; p_intervals: unknown };
+        Returns: { unique_seconds_watched: number; completion_percent: number; completed: boolean };
+      };
+      get_vsl_analytics: {
+        Args: { p_workspace: string; p_vsl_asset_id: string };
+        Returns: Record<string, unknown>;
+      };
+      get_lead_vsl_history: {
+        Args: { p_workspace: string; p_lead_id: string };
+        Returns: Array<{
+          session_id: string;
+          vsl_name: string;
+          duration_seconds: number;
+          started_at: string;
+          total_unique_seconds_watched: number;
+          completion_percent: number;
+          completed: boolean;
+          intervals: Array<{ start: number; end: number }>;
+        }>;
+      };
+      record_consent_event: {
+        Args: {
+          p_workspace: string;
+          p_policy_version_id: string;
+          p_category: string;
+          p_state: string;
+          p_source: string;
+          p_visitor_id?: string | null;
+          p_lead_id?: string | null;
+          p_form_submission_id?: string | null;
+        };
+        Returns: { consent_event_id: string };
+      };
+      get_attribution_analytics: {
+        Args: { p_workspace: string };
+        Returns: Array<{
+          channel: string;
+          leads_count: number;
+          deals_won: number;
+          total_cash_minor: string;
+          close_rate: string;
+        }>;
+      };
+      get_attribution_report: {
+        Args: { p_workspace: string; p_model?: string };
+        Returns: Array<{
+          channel: string;
+          leads_count: number;
+          deals_won: number;
+          total_cash_minor: string;
+          close_rate: string;
+        }>;
+      };
+      list_tracking_sites: {
+        Args: { p_workspace: string };
+        Returns: Array<{
+          id: string;
+          name: string;
+          public_key: string;
+          allowed_origins: string[];
+          is_public_any_origin: boolean;
+          status: string;
+          created_at: string;
+        }>;
+      };
+      list_forms: {
+        Args: { p_workspace: string };
+        Returns: Array<{
+          id: string;
+          name: string;
+          public_key: string;
+          status: string;
+          created_at: string;
+          current_version_id: string | null;
+          submission_count: number;
+          version_count: number;
+        }>;
+      };
+      list_vsl_assets: {
+        Args: { p_workspace: string };
+        Returns: Array<{
+          id: string;
+          name: string;
+          public_key: string;
+          player_type: string;
+          status: string;
+          created_at: string;
+          duration_seconds: number;
+          session_count: number;
+          completed_count: number;
+        }>;
+      };
+      get_lead_attribution: {
+        Args: { p_workspace: string; p_lead_id: string };
+        Returns: Array<{
+          model: string;
+          first_touch_at: string;
+          calculated_at: string;
+          touch: {
+            utm_source: string | null;
+            utm_medium: string | null;
+            utm_campaign: string | null;
+            landing_url: string | null;
+            referrer: string | null;
+            occurred_at: string;
+          };
+        }>;
+      };
     };
   };
 };

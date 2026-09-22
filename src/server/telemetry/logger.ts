@@ -18,7 +18,18 @@ export type TelemetryEvent =
   | "task.complete"
   | "sales.command"
   | "payment.command"
-  | "task.reopen";
+  | "task.reopen"
+  | "forms.create_site"
+  | "forms.create_form"
+  | "forms.publish_version"
+  | "forms.public_submit"
+  | "vsl.create_asset"
+  | "vsl.get_lead_history"
+  | "vsl.get_analytics"
+  | "vsl.public_start"
+  | "vsl.public_heartbeat"
+  | "attribution.get_snapshots"
+  | "attribution.get_touches";
 
 type LogEntry = {
   event: TelemetryEvent;
