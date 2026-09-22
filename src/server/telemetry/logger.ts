@@ -29,7 +29,20 @@ export type TelemetryEvent =
   | "vsl.public_start"
   | "vsl.public_heartbeat"
   | "attribution.get_snapshots"
-  | "attribution.get_touches";
+  | "attribution.get_touches"
+  | "messaging.outbound_create"
+  | "messaging.inbound_ingest"
+  | "messaging.inbound_resolve"
+  | "messaging.suppression_add"
+  | "messaging.suppression_revoke"
+  | "template.create"
+  | "template.publish"
+  | "campaign.create"
+  | "campaign.launch"
+  | "campaign.cancel"
+  | "sequence.create"
+  | "sequence.publish"
+  | "sequence.enroll";
 
 type LogEntry = {
   event: TelemetryEvent;
@@ -37,6 +50,12 @@ type LogEntry = {
   requestId?: string;
   errorCode?: ErrorCode;
   code?: string;
+  // Privacy-safe metadata (Correction 16: never log full message bodies, rendered sensitive templates, or raw PII)
+  channel?: "email" | "sms" | "whatsapp";
+  messageId?: string;
+  conversationId?: string;
+  campaignId?: string;
+  sequenceId?: string;
 };
 
 export function log(entry: LogEntry) {
@@ -54,6 +73,11 @@ export function log(entry: LogEntry) {
       requestId: entry.requestId || crypto.randomUUID(),
       ...(entry.errorCode ? { errorCode: entry.errorCode } : {}),
       ...(entry.code ? { code: entry.code } : {}),
+      ...(entry.channel ? { channel: entry.channel } : {}),
+      ...(entry.messageId ? { messageId: entry.messageId } : {}),
+      ...(entry.conversationId ? { conversationId: entry.conversationId } : {}),
+      ...(entry.campaignId ? { campaignId: entry.campaignId } : {}),
+      ...(entry.sequenceId ? { sequenceId: entry.sequenceId } : {}),
     })
   );
 }

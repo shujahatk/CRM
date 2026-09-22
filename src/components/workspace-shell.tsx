@@ -15,6 +15,7 @@ import {
   Play,
   ClipboardList,
   BarChart3,
+  GitFork,
   Settings,
 } from "lucide-react";
 import { Brand } from "./brand";
@@ -28,6 +29,10 @@ const activeModules = [
   { name: "Leads", path: "/leads", icon: Users },
   { name: "Pipeline", path: "/pipeline", icon: Columns3 },
   { name: "Tasks", path: "/tasks", icon: CheckSquare },
+  { name: "Conversations", path: "/conversations", icon: MessagesSquare },
+  { name: "Campaigns", path: "/campaigns", icon: Megaphone },
+  { name: "Templates", path: "/templates", icon: FileText },
+  { name: "Sequences", path: "/sequences", icon: GitFork },
   { name: "Forms", path: "/forms", icon: FileText },
   { name: "Attribution", path: "/attribution", icon: ChartNoAxesCombined },
   { name: "VSL Analytics", path: "/vsl", icon: Play },
@@ -36,8 +41,6 @@ const activeModules = [
 ] as const;
 
 const upcomingModules = [
-  ["Conversations", MessagesSquare],
-  ["Campaigns", Megaphone],
   ["Settings", Settings],
 ] as const;
 

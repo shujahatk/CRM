@@ -464,6 +464,227 @@ export type Database = {
           };
         }>;
       };
+      create_outbound_message: {
+        Args: {
+          p_workspace: string;
+          p_lead_id: string;
+          p_channel: string;
+          p_recipient_address: string;
+          p_text_body?: string | null;
+          p_subject?: string | null;
+          p_html_body?: string | null;
+          p_template_version_id?: string | null;
+          p_command_key?: string | null;
+          p_channel_account_id?: string | null;
+          p_template_variables?: Record<string, unknown> | null;
+        };
+        Returns: {
+          message_id: string;
+          conversation_id: string;
+          status: string;
+          dispatch_status: string;
+        };
+      };
+      ingest_inbound_message: {
+        Args: {
+          p_workspace: string;
+          p_channel: string;
+          p_sender_address: string;
+          p_recipient_address: string;
+          p_text_body: string;
+          p_subject?: string | null;
+          p_provider_message_id?: string | null;
+          p_idempotency_key?: string | null;
+          p_occurred_at?: string;
+        };
+        Returns: {
+          message_id?: string;
+          conversation_id?: string;
+          review_id?: string;
+          lead_id?: string;
+          status: string;
+          duplicate?: boolean;
+          reason?: string;
+        };
+      };
+      resolve_inbound_review: {
+        Args: {
+          p_workspace: string;
+          p_review_id: string;
+          p_lead_id: string;
+          p_resolution_notes?: string | null;
+        };
+        Returns: {
+          review_id: string;
+          conversation_id: string;
+          message_id: string;
+          status: string;
+        };
+      };
+      upsert_channel_account: {
+        Args: {
+          p_workspace: string;
+          p_channel: string;
+          p_sender_address: string;
+          p_display_name: string;
+          p_is_default?: boolean;
+        };
+        Returns: { id: string; channel: string; sender_address: string };
+      };
+      create_template: {
+        Args: { p_workspace: string; p_name: string; p_channel: string };
+        Returns: { id: string; name: string; channel: string };
+      };
+      publish_template_version: {
+        Args: { p_workspace: string; p_template_id: string; p_subject: string | null; p_body: string };
+        Returns: { template_id: string; version_id: string; version: number };
+      };
+      create_campaign: {
+        Args: {
+          p_workspace: string;
+          p_name: string;
+          p_channel: string;
+          p_template_version_id: string;
+          p_audience_filters?: Record<string, unknown>;
+          p_batch_size?: number;
+        };
+        Returns: { id: string; name: string; channel: string; status: string };
+      };
+      launch_campaign: {
+        Args: { p_workspace: string; p_campaign_id: string; p_command_key?: string | null };
+        Returns: {
+          campaign_id: string;
+          total_recipients: number;
+          eligible_count: number;
+          suppressed_count: number;
+          status: string;
+        };
+      };
+      cancel_campaign: {
+        Args: { p_workspace: string; p_campaign_id: string };
+        Returns: { campaign_id: string; status: string };
+      };
+      create_sequence: {
+        Args: { p_workspace: string; p_name: string; p_description?: string | null };
+        Returns: { id: string; name: string; status: string };
+      };
+      publish_sequence_version: {
+        Args: {
+          p_workspace: string;
+          p_sequence_id: string;
+          p_steps: Array<Record<string, unknown>>;
+          p_exit_conditions?: string[];
+        };
+        Returns: { sequence_id: string; version_id: string; version: number };
+      };
+      enroll_lead_sequence: {
+        Args: { p_workspace: string; p_sequence_id: string; p_lead_id: string };
+        Returns: { enrollment_id?: string; status: string; reason?: string };
+      };
+      add_suppression: {
+        Args: {
+          p_workspace: string;
+          p_scope: string;
+          p_reason: string;
+          p_destination?: string | null;
+          p_lead_id?: string | null;
+          p_channel?: string | null;
+          p_expires_at?: string | null;
+        };
+        Returns: { suppression_id: string; status: string };
+      };
+      revoke_suppression: {
+        Args: { p_workspace: string; p_suppression_id: string; p_reason?: string | null };
+        Returns: { suppression_id: string; status: string };
+      };
+      list_conversations: {
+        Args: { p_workspace: string; p_channel?: string | null; p_status?: string | null };
+        Returns: Array<{
+          id: string;
+          lead_id: string;
+          lead_name: string;
+          lead_company: string | null;
+          channel: "email" | "sms" | "whatsapp";
+          destination: string;
+          status: "open" | "pending" | "closed" | "archived";
+          unread_count: number;
+          last_message_at: string;
+          last_message_snippet: string | null;
+          assigned_to_name: string | null;
+        }>;
+      };
+      get_conversation_messages: {
+        Args: { p_workspace: string; p_conversation_id: string; p_limit?: number; p_offset?: number };
+        Returns: Array<{
+          id: string;
+          direction: "inbound" | "outbound";
+          channel: "email" | "sms" | "whatsapp";
+          sender: string;
+          recipient: string;
+          subject: string | null;
+          text_body: string;
+          status: string;
+          dispatch_status: string;
+          created_at: string;
+          author_name: string | null;
+        }>;
+      };
+      list_inbound_reviews: {
+        Args: { p_workspace: string };
+        Returns: Array<{
+          id: string;
+          channel: "email" | "sms" | "whatsapp";
+          sender_address: string;
+          recipient_address: string;
+          subject: string | null;
+          text_body: string;
+          occurred_at: string;
+          resolution_state: "pending" | "resolved" | "dismissed";
+          resolution_reason: "unmatched_sender" | "ambiguous_identity_conflict" | "missing_channel_account";
+          candidate_lead_ids: string[];
+        }>;
+      };
+      list_message_templates: {
+        Args: { p_workspace: string };
+        Returns: Array<{
+          id: string;
+          name: string;
+          channel: "email" | "sms" | "whatsapp";
+          status: "active" | "archived";
+          current_version: number | null;
+          subject: string | null;
+          body: string | null;
+          variables_used: string[];
+        }>;
+      };
+      list_campaigns: {
+        Args: { p_workspace: string };
+        Returns: Array<{
+          id: string;
+          name: string;
+          channel: "email" | "sms" | "whatsapp";
+          status: string;
+          scheduled_at: string | null;
+          started_at: string | null;
+          completed_at: string | null;
+          recipient_count: number;
+          eligible_count: number;
+          suppressed_count: number;
+        }>;
+      };
+      list_sequences: {
+        Args: { p_workspace: string };
+        Returns: Array<{
+          id: string;
+          name: string;
+          description: string | null;
+          status: string;
+          current_version: number | null;
+          exit_conditions: string[];
+          step_count: number;
+          active_enrollments: number;
+        }>;
+      };
     };
   };
 };

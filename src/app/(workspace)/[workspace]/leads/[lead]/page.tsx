@@ -8,6 +8,7 @@ import { LeadStageControl } from "@/components/leads/lead-stage-control";
 import { LeadNotesControl } from "@/components/leads/lead-notes-control";
 import { LeadTasksControl } from "@/components/leads/lead-tasks-control";
 import { LeadAssignmentControl } from "@/components/leads/lead-assignment-control";
+import { LeadMessagingControl } from "@/components/leads/lead-messaging-control";
 import {
   ArrowLeft,
   Building,
@@ -237,6 +238,9 @@ export default async function LeadDetailPage({
               )}
             </div>
           </div>
+
+          {/* Quick Messaging Control (Phase 5) */}
+          <LeadMessagingControl workspace={workspace} leadId={leadId} identities={identities} />
         </div>
 
         {/* Right Column (7 cols): Notes, Tasks, Activity Audit Trail */}
